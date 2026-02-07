@@ -14,7 +14,7 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [existingId, setExistingId] = useState<string | null>(null)
-  const [photoUrls, setPhotoUrls] = useState<string[]>([])
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -32,60 +32,56 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
       if (data) {
         setContent(data.content || '')
         setExistingId(data.id)
-        setPhotoUrls(data.photo_urls || [])
+        // 1枚のみ対応（配列の最初の要素を使用）
+        const urls = data.photo_urls || []
+        setPhotoUrl(urls.length > 0 ? urls[0] : null)
       }
     }
     fetchDiary()
   }, [childId, date, supabase])
 
-  // 写真アップロード（自動圧縮付き）
+  // 写真アップロード（自動圧縮付き、1枚のみ）
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+    const file = e.target.files?.[0]
+    if (!file) return
 
     setUploading(true)
 
-    const newUrls: string[] = []
+    try {
+      // 画像を圧縮（長辺1800px、画質85%）
+      const compressedBlob = await compressImage(file)
 
-    for (const file of Array.from(files)) {
-      try {
-        // 画像を圧縮（長辺1800px、画質85%）
-        const compressedBlob = await compressImage(file)
+      const fileName = `${childId}/${date}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
-        const fileName = `${childId}/${date}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+      const { error } = await supabase.storage
+        .from('photos')
+        .upload(fileName, compressedBlob, {
+          contentType: 'image/jpeg',
+        })
 
-        const { error } = await supabase.storage
-          .from('photos')
-          .upload(fileName, compressedBlob, {
-            contentType: 'image/jpeg',
-          })
-
-        if (error) {
-          console.error('Upload error:', error)
-          continue
-        }
-
-        const { data: urlData } = supabase.storage
-          .from('photos')
-          .getPublicUrl(fileName)
-
-        newUrls.push(urlData.publicUrl)
-      } catch (err) {
-        console.error('Compression error:', err)
+      if (error) {
+        console.error('Upload error:', error)
+        return
       }
-    }
 
-    setPhotoUrls(prev => [...prev, ...newUrls])
-    setUploading(false)
+      const { data: urlData } = supabase.storage
+        .from('photos')
+        .getPublicUrl(fileName)
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      setPhotoUrl(urlData.publicUrl)
+    } catch (err) {
+      console.error('Compression error:', err)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
   // 写真削除
-  const handleRemovePhoto = (index: number) => {
-    setPhotoUrls(prev => prev.filter((_, i) => i !== index))
+  const handleRemovePhoto = () => {
+    setPhotoUrl(null)
   }
 
   const handleSubmit = async () => {
@@ -96,7 +92,7 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
         .from('diaries')
         .update({
           content,
-          photo_urls: photoUrls.length > 0 ? photoUrls : null,
+          photo_urls: photoUrl ? [photoUrl] : null,
         })
         .eq('id', existingId)
     } else {
@@ -106,7 +102,7 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
           child_id: childId,
           date,
           content,
-          photo_urls: photoUrls.length > 0 ? photoUrls : null,
+          photo_urls: photoUrl ? [photoUrl] : null,
         })
     }
 
@@ -146,46 +142,43 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
         </div>
 
         {/* 写真プレビュー */}
-        {photoUrls.length > 0 && (
+        {photoUrl && (
           <div className="mb-4">
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {photoUrls.map((url, i) => (
-                <div key={i} className="relative flex-shrink-0 w-24 h-24">
-                  <img
-                    src={url}
-                    alt={`写真${i + 1}`}
-                    className="w-24 h-24 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => handleRemovePhoto(i)}
-                    className="absolute w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-md"
-                    style={{ top: '4px', right: '4px' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+            <div className="relative inline-block">
+              <img
+                src={photoUrl}
+                alt="今日の写真"
+                className="w-32 h-32 object-cover rounded-lg"
+              />
+              <button
+                onClick={handleRemovePhoto}
+                className="absolute w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-md"
+                style={{ top: '4px', right: '4px' }}
+              >
+                ✕
+              </button>
             </div>
           </div>
         )}
 
-        {/* 写真追加ボタン */}
+        {/* 写真追加ボタン（1枚のみ） */}
         <div className="mb-6">
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            multiple
             onChange={handlePhotoUpload}
             className="hidden"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 transition disabled:opacity-50"
-          >
-            {uploading ? '📷 アップロード中...' : `📷 写真を追加${photoUrls.length > 0 ? `（${photoUrls.length}枚）` : ''}`}
-          </button>
+          {!photoUrl && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 transition disabled:opacity-50"
+            >
+              {uploading ? '📷 アップロード中...' : '📷 今日の写真を追加'}
+            </button>
+          )}
         </div>
 
         {/* 保存ボタン */}
