@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)",
+      "Bash(node:*)",
+      "Bash(ipconfig getifaddr:*)",
+      "Bash(ipconfig:*)",
+      "Bash(lsof:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npm search jspdf japanese font)",
+      "Bash(npx tsc:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx cap add ios)",
+      "Bash(npx cap sync:*)",
+      "Bash(npm run build:ios:*)",
+      "Bash(/usr/bin/git status:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
