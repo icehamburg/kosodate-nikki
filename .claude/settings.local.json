@@ -18,7 +18,13 @@
       "Bash(npm run build:ios:*)",
       "Bash(/usr/bin/git status:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh auth:*)",
+      "Bash(brew install:*)",
+      "Bash(gh repo create:*)",
+      "Bash(/opt/homebrew/bin/gh repo create:*)",
+      "Bash(git push)"
     ]
   }
 }
