@@ -20,6 +20,7 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   const [selectedRecordType, setSelectedRecordType] = useState<string | null>(null)
   const [showDiaryModal, setShowDiaryModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [toast, setToast] = useState<string | null>(null)
   const supabase = createClient()
 
   const selectedChild = children.find(c => c.id === selectedChildId)
@@ -97,6 +98,12 @@ export default function HomeClient({ initialChildren, userId }: Props) {
 
   const handleRecordSaved = (newRecord: Record) => {
     setRecords(prev => [newRecord, ...prev])
+    setSelectedRecordType(null) // モーダルを閉じる
+
+    // トースト表示
+    const recordType = RECORD_TYPES.find(r => r.type === newRecord.type)
+    setToast(`${recordType?.emoji} ${recordType?.label}を記録しました`)
+    setTimeout(() => setToast(null), 2000)
   }
 
   // 記録を削除
@@ -269,6 +276,13 @@ export default function HomeClient({ initialChildren, userId }: Props) {
           date={selectedDate.toISOString().split('T')[0]}
           onClose={() => setShowDiaryModal(false)}
         />
+      )}
+
+      {/* トースト通知 */}
+      {toast && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in">
+          {toast}
+        </div>
       )}
 
       {/* ボトムナビ */}

@@ -18,6 +18,7 @@ export default function CalendarPage() {
   const [dayRecords, setDayRecords] = useState<Record[]>([])
   const [dayDiary, setDayDiary] = useState<Diary | null>(null)
   const [showDiaryModal, setShowDiaryModal] = useState(false)
+  const [showFullImage, setShowFullImage] = useState<string | null>(null)
   const supabase = createClient()
   const router = useRouter()
 
@@ -254,10 +255,25 @@ export default function CalendarPage() {
           </div>
 
           {/* 日記 */}
-          {dayDiary && dayDiary.content && (
+          {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) && (
             <div className="bg-yellow-50 rounded-xl p-4 mb-3 shadow-sm">
-              <div className="text-xs text-yellow-600 mb-1">📝 日記</div>
-              <div className="text-sm text-gray-700">{dayDiary.content}</div>
+              <div className="flex gap-3">
+                {/* 写真があれば表示 */}
+                {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
+                  <img
+                    src={dayDiary.photo_urls[0]}
+                    alt="日記の写真"
+                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer"
+                    onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="text-xs text-yellow-600 mb-1">📝 日記</div>
+                  {dayDiary.content && (
+                    <div className="text-sm text-gray-700">{dayDiary.content}</div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -330,6 +346,26 @@ export default function CalendarPage() {
             fetchDiary()
           }}
         />
+      )}
+
+      {/* 写真拡大表示 */}
+      {showFullImage && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowFullImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white text-xl"
+            onClick={() => setShowFullImage(null)}
+          >
+            ✕
+          </button>
+          <img
+            src={showFullImage}
+            alt="日記の写真"
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </div>
       )}
 
       {/* ボトムナビ */}

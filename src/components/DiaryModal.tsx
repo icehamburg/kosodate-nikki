@@ -16,6 +16,7 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
   const [existingId, setExistingId] = useState<string | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [showFullImage, setShowFullImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -148,7 +149,8 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
               <img
                 src={photoUrl}
                 alt="今日の写真"
-                className="w-32 h-32 object-cover rounded-lg"
+                className="w-32 h-32 object-cover rounded-lg cursor-pointer"
+                onClick={() => setShowFullImage(true)}
               />
               <button
                 onClick={handleRemovePhoto}
@@ -191,6 +193,26 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
           {loading ? '保存中...' : '保存する'}
         </button>
       </div>
+
+      {/* 写真拡大表示 */}
+      {showFullImage && photoUrl && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4"
+          onClick={() => setShowFullImage(false)}
+        >
+          <button
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white text-xl"
+            onClick={() => setShowFullImage(false)}
+          >
+            ✕
+          </button>
+          <img
+            src={photoUrl}
+            alt="今日の写真"
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </div>
+      )}
     </div>
   )
 }

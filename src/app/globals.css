@@ -70,6 +70,22 @@ input, textarea, select {
   animation: slide-up 0.3s ease-out;
 }
 
+/* トースト通知アニメーション */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
 /* スタンドアロンモード（ホーム画面から起動）時の追加スタイル */
 @media (display-mode: standalone) {
   body {
