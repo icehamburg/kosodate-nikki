@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/image-compressor'
 
 type Props = {
   childId: string
@@ -37,7 +38,7 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
     fetchDiary()
   }, [childId, date, supabase])
 
-  // 写真アップロード
+  // 写真アップロード（自動圧縮付き）
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -47,23 +48,31 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
     const newUrls: string[] = []
 
     for (const file of Array.from(files)) {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${childId}/${date}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`
+      try {
+        // 画像を圧縮（長辺1800px、画質85%）
+        const compressedBlob = await compressImage(file)
 
-      const { error } = await supabase.storage
-        .from('photos')
-        .upload(fileName, file)
+        const fileName = `${childId}/${date}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
-      if (error) {
-        console.error('Upload error:', error)
-        continue
+        const { error } = await supabase.storage
+          .from('photos')
+          .upload(fileName, compressedBlob, {
+            contentType: 'image/jpeg',
+          })
+
+        if (error) {
+          console.error('Upload error:', error)
+          continue
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('photos')
+          .getPublicUrl(fileName)
+
+        newUrls.push(urlData.publicUrl)
+      } catch (err) {
+        console.error('Compression error:', err)
       }
-
-      const { data: urlData } = supabase.storage
-        .from('photos')
-        .getPublicUrl(fileName)
-
-      newUrls.push(urlData.publicUrl)
     }
 
     setPhotoUrls(prev => [...prev, ...newUrls])
