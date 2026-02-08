@@ -97,7 +97,13 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   const summary = getSummary()
 
   const handleRecordSaved = (newRecord: Record) => {
-    setRecords(prev => [newRecord, ...prev])
+    // 新しい記録を追加して時刻順（降順）にソート
+    setRecords(prev => {
+      const newRecords = [...prev, newRecord]
+      return newRecords.sort((a, b) =>
+        new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
+      )
+    })
     setSelectedRecordType(null) // モーダルを閉じる
 
     // トースト表示

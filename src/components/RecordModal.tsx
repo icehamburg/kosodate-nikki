@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Record, RecordType, RECORD_TYPES } from '@/lib/types'
 
@@ -17,14 +17,42 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
     const now = new Date()
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
   })
-  const [amount, setAmount] = useState<number | null>(null)
+  const [amount, setAmount] = useState<number>(100)
   const [temperatureInt, setTemperatureInt] = useState(36)
   const [temperatureDec, setTemperatureDec] = useState(5)
-  const [leftMinutes, setLeftMinutes] = useState<number | null>(null)
-  const [rightMinutes, setRightMinutes] = useState<number | null>(null)
+  // 母乳ストップウォッチ
+  const [leftSeconds, setLeftSeconds] = useState(0)
+  const [rightSeconds, setRightSeconds] = useState(0)
+  const [leftTimerRunning, setLeftTimerRunning] = useState(false)
+  const [rightTimerRunning, setRightTimerRunning] = useState(false)
   const [sleepType, setSleepType] = useState<'asleep' | 'awake' | null>(null)
   const [memo, setMemo] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // ストップウォッチのタイマー
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if (leftTimerRunning) {
+      interval = setInterval(() => {
+        setLeftSeconds(prev => prev + 1)
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [leftTimerRunning])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if (rightTimerRunning) {
+      interval = setInterval(() => {
+        setRightSeconds(prev => prev + 1)
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [rightTimerRunning])
 
   const supabase = createClient()
   const recordType = RECORD_TYPES.find(r => r.type === type)
@@ -39,8 +67,9 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
     const value: Record['value'] = {}
     if (type === 'milk' && amount) value.amount = amount
     if (type === 'breast') {
-      if (leftMinutes) value.left_minutes = leftMinutes
-      if (rightMinutes) value.right_minutes = rightMinutes
+      // 秒を分に変換（小数点以下1桁まで）
+      if (leftSeconds > 0) value.left_minutes = Math.round(leftSeconds / 6) / 10
+      if (rightSeconds > 0) value.right_minutes = Math.round(rightSeconds / 6) / 10
     }
     if (type === 'sleep' && sleepType) {
       value.sleep_type = sleepType
@@ -71,8 +100,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
     onSaved(data)
   }
 
-  const milkAmounts = [60, 80, 100, 120, 140, 160, 180, 200, 220, 240]
-  const breastMinutes = [5, 10, 15, 20, 25, 30]
+  // ミルク量は10-350mlまで10ml刻み (selectで生成)
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
@@ -100,56 +128,146 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
           />
         </div>
 
-        {/* ミルクの量 */}
+        {/* ミルクの量（ドラムロール） */}
         {type === 'milk' && (
           <div className="mb-4">
             <label className="text-xs text-gray-500 block mb-2">量（ml）</label>
-            <div className="flex flex-wrap gap-2">
-              {milkAmounts.map(ml => (
-                <button
-                  key={ml}
-                  onClick={() => setAmount(ml)}
-                  className="px-4 py-2 rounded-full border transition"
-                  style={amount === ml ? { backgroundColor: '#D97757', color: 'white', borderColor: '#D97757' } : { borderColor: '#e5e7eb' }}
-                >
-                  {ml}
-                </button>
-              ))}
+            <div className="flex items-center justify-center gap-2">
+              <select
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+                className="text-4xl font-bold p-3 border border-gray-200 rounded-xl bg-white appearance-none text-center w-32"
+                style={{ fontSize: '2rem' }}
+              >
+                {Array.from({ length: 35 }, (_, i) => (i + 1) * 10).map(ml => (
+                  <option key={ml} value={ml}>{ml}</option>
+                ))}
+              </select>
+              <span className="text-2xl text-gray-500">ml</span>
             </div>
           </div>
         )}
 
-        {/* 母乳の時間 */}
+        {/* 母乳の時間（ストップウォッチ or ドラムロール） */}
         {type === 'breast' && (
           <>
+            {/* 左側 */}
             <div className="mb-4">
-              <label className="text-xs text-gray-500 block mb-2">左（分）</label>
-              <div className="flex flex-wrap gap-2">
-                {breastMinutes.map(min => (
+              <label className="text-xs text-gray-500 block mb-2">左（分:秒）</label>
+              <div className="flex items-center gap-3">
+                {/* ストップウォッチ */}
+                <div className="flex-1 flex items-center gap-2">
                   <button
-                    key={min}
-                    onClick={() => setLeftMinutes(min)}
-                    className="px-4 py-2 rounded-full border transition"
-                    style={leftMinutes === min ? { backgroundColor: '#D97757', color: 'white', borderColor: '#D97757' } : { borderColor: '#e5e7eb' }}
+                    onClick={() => {
+                      if (leftTimerRunning) {
+                        setLeftTimerRunning(false)
+                      } else {
+                        setLeftTimerRunning(true)
+                        setRightTimerRunning(false)
+                      }
+                    }}
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition"
+                    style={{
+                      backgroundColor: leftTimerRunning ? '#ef4444' : '#D97757',
+                      color: 'white'
+                    }}
                   >
-                    {min}
+                    {leftTimerRunning ? '⏹' : '▶'}
                   </button>
-                ))}
+                  <div className="text-3xl font-mono font-bold tabular-nums">
+                    {String(Math.floor(leftSeconds / 60)).padStart(2, '0')}:{String(leftSeconds % 60).padStart(2, '0')}
+                  </div>
+                  {leftSeconds > 0 && !leftTimerRunning && (
+                    <button
+                      onClick={() => setLeftSeconds(0)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {/* ドラムロール */}
+                <div className="flex items-center gap-1">
+                  <select
+                    value={Math.floor(leftSeconds / 60)}
+                    onChange={(e) => setLeftSeconds(Number(e.target.value) * 60 + (leftSeconds % 60))}
+                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                  >
+                    {Array.from({ length: 61 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                  <span className="text-lg">:</span>
+                  <select
+                    value={leftSeconds % 60}
+                    onChange={(e) => setLeftSeconds(Math.floor(leftSeconds / 60) * 60 + Number(e.target.value))}
+                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                  >
+                    {Array.from({ length: 60 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
+
+            {/* 右側 */}
             <div className="mb-4">
-              <label className="text-xs text-gray-500 block mb-2">右（分）</label>
-              <div className="flex flex-wrap gap-2">
-                {breastMinutes.map(min => (
+              <label className="text-xs text-gray-500 block mb-2">右（分:秒）</label>
+              <div className="flex items-center gap-3">
+                {/* ストップウォッチ */}
+                <div className="flex-1 flex items-center gap-2">
                   <button
-                    key={min}
-                    onClick={() => setRightMinutes(min)}
-                    className="px-4 py-2 rounded-full border transition"
-                    style={rightMinutes === min ? { backgroundColor: '#D97757', color: 'white', borderColor: '#D97757' } : { borderColor: '#e5e7eb' }}
+                    onClick={() => {
+                      if (rightTimerRunning) {
+                        setRightTimerRunning(false)
+                      } else {
+                        setRightTimerRunning(true)
+                        setLeftTimerRunning(false)
+                      }
+                    }}
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition"
+                    style={{
+                      backgroundColor: rightTimerRunning ? '#ef4444' : '#D97757',
+                      color: 'white'
+                    }}
                   >
-                    {min}
+                    {rightTimerRunning ? '⏹' : '▶'}
                   </button>
-                ))}
+                  <div className="text-3xl font-mono font-bold tabular-nums">
+                    {String(Math.floor(rightSeconds / 60)).padStart(2, '0')}:{String(rightSeconds % 60).padStart(2, '0')}
+                  </div>
+                  {rightSeconds > 0 && !rightTimerRunning && (
+                    <button
+                      onClick={() => setRightSeconds(0)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {/* ドラムロール */}
+                <div className="flex items-center gap-1">
+                  <select
+                    value={Math.floor(rightSeconds / 60)}
+                    onChange={(e) => setRightSeconds(Number(e.target.value) * 60 + (rightSeconds % 60))}
+                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                  >
+                    {Array.from({ length: 61 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                  <span className="text-lg">:</span>
+                  <select
+                    value={rightSeconds % 60}
+                    onChange={(e) => setRightSeconds(Math.floor(rightSeconds / 60) * 60 + Number(e.target.value))}
+                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                  >
+                    {Array.from({ length: 60 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </>
