@@ -74,7 +74,7 @@ export default function HomeClient({ initialChildren, userId }: Props) {
         .eq('child_id', selectedChildId)
         .gte('recorded_at', dayStart.toISOString())
         .lte('recorded_at', dayEnd.toISOString())
-        .order('recorded_at', { ascending: false })
+        .order('recorded_at', { ascending: true })
 
       if (data) setRecords(data)
     }
@@ -97,11 +97,11 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   const summary = getSummary()
 
   const handleRecordSaved = (newRecord: Record) => {
-    // 新しい記録を追加して時刻順（降順）にソート
+    // 新しい記録を追加して時刻順（昇順：上から下）にソート
     setRecords(prev => {
       const newRecords = [...prev, newRecord]
       return newRecords.sort((a, b) =>
-        new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
+        new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
       )
     })
     setSelectedRecordType(null) // モーダルを閉じる
@@ -128,7 +128,7 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32">
+    <div className="min-h-screen bg-gray-50 pb-16">
       {/* ヘッダー */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -222,18 +222,34 @@ export default function HomeClient({ initialChildren, userId }: Props) {
           ) : (
             records.map(record => {
               const recordType = RECORD_TYPES.find(r => r.type === record.type)
-              const time = new Date(record.recorded_at).toLocaleTimeString('ja-JP', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+              const time = new Date(record.recorded_at).toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit'
               })
-              
+
+              // 睡眠の場合はラベルと絵文字を上書き
+              let displayLabel = recordType?.label || ''
+              let displayEmoji = recordType?.emoji || ''
               let detail = ''
-              if (record.type === 'milk' && record.value?.amount) {
+
+              if (record.type === 'sleep' && record.value?.sleep_type) {
+                if (record.value.sleep_type === 'asleep') {
+                  displayLabel = '寝た'
+                  displayEmoji = '😴'
+                } else {
+                  displayLabel = '起きた'
+                  displayEmoji = '😊'
+                }
+              } else if (record.type === 'milk' && record.value?.amount) {
                 detail = `${record.value.amount}ml`
               } else if (record.type === 'temperature' && record.value?.temperature) {
                 detail = `${record.value.temperature}℃`
-              } else if (record.type === 'sleep' && record.value?.sleep_type) {
-                detail = record.value.sleep_type === 'asleep' ? '寝た' : '起きた'
+              } else if (record.type === 'breast') {
+                const left = record.value?.left_minutes
+                const right = record.value?.right_minutes
+                if (left || right) {
+                  detail = `左${left || 0}分 右${right || 0}分`
+                }
               }
 
               return (
@@ -242,9 +258,9 @@ export default function HomeClient({ initialChildren, userId }: Props) {
                   className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm"
                 >
                   <span className="text-xs text-gray-400 w-12">{time}</span>
-                  <span className="text-xl">{recordType?.emoji}</span>
+                  <span className="text-xl">{displayEmoji}</span>
                   <span className="text-sm flex-1">
-                    {recordType?.label}
+                    {displayLabel}
                     {detail && <span className="text-gray-500 ml-1">{detail}</span>}
                     {record.memo && (
                       <span className="text-xs text-gray-400 ml-2">{record.memo}</span>

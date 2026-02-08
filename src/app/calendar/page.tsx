@@ -148,7 +148,7 @@ export default function CalendarPage() {
   const days = generateCalendarDays()
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-14">
       {/* ヘッダー */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -342,9 +342,9 @@ export default function CalendarPage() {
                   .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
 
                 return (
-                  <div key={hour} className="flex border-b last:border-b-0">
+                  <div key={hour} className="flex border-b border-gray-100 last:border-b-0">
                     {/* 時刻ラベル（左側固定） */}
-                    <div className="w-12 py-3 text-center text-xs text-gray-400 border-r bg-gray-50 flex-shrink-0 sticky left-0">
+                    <div className="w-12 py-3 text-center text-xs text-gray-300 border-r border-gray-100 bg-gray-50/50 flex-shrink-0 sticky left-0">
                       {hour}
                     </div>
                     {/* 記録エリア */}
@@ -353,13 +353,24 @@ export default function CalendarPage() {
                         hourRecords.map(record => {
                           const recordType = RECORD_TYPES.find(r => r.type === record.type)
                           const minutes = new Date(record.recorded_at).getMinutes()
+
+                          // 睡眠の場合はラベルと絵文字を上書き
+                          let displayLabel = recordType?.label || ''
+                          let displayEmoji = recordType?.emoji || ''
                           let detail = ''
-                          if (record.type === 'milk' && record.value?.amount) {
+
+                          if (record.type === 'sleep' && record.value?.sleep_type) {
+                            if (record.value.sleep_type === 'asleep') {
+                              displayLabel = '寝た'
+                              displayEmoji = '😴'
+                            } else {
+                              displayLabel = '起きた'
+                              displayEmoji = '😊'
+                            }
+                          } else if (record.type === 'milk' && record.value?.amount) {
                             detail = `${record.value.amount}ml`
                           } else if (record.type === 'temperature' && record.value?.temperature) {
                             detail = `${record.value.temperature}℃`
-                          } else if (record.type === 'sleep' && record.value?.sleep_type) {
-                            detail = record.value.sleep_type === 'asleep' ? '寝た' : '起きた'
                           } else if (record.type === 'breast') {
                             const left = record.value?.left_minutes
                             const right = record.value?.right_minutes
@@ -373,9 +384,9 @@ export default function CalendarPage() {
                               key={record.id}
                               className="flex items-center gap-2 text-sm"
                             >
-                              <span className="text-gray-400 text-xs w-6">:{String(minutes).padStart(2, '0')}</span>
-                              <span className="text-lg">{recordType?.emoji}</span>
-                              <span className="font-medium">{recordType?.label}</span>
+                              <span className="text-gray-300 text-xs w-6">:{String(minutes).padStart(2, '0')}</span>
+                              <span className="text-lg">{displayEmoji}</span>
+                              <span className="font-medium">{displayLabel}</span>
                               {detail && <span className="text-gray-500 text-xs">{detail}</span>}
                             </div>
                           )
