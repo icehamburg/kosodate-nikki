@@ -18,6 +18,7 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   const [selectedChildId, setSelectedChildId] = useState<string>(initialChildren[0]?.id)
   const [records, setRecords] = useState<Record[]>([])
   const [selectedRecordType, setSelectedRecordType] = useState<string | null>(null)
+  const [editingRecord, setEditingRecord] = useState<Record | null>(null)
   const [showDiaryModal, setShowDiaryModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [toast, setToast] = useState<string | null>(null)
@@ -112,6 +113,29 @@ export default function HomeClient({ initialChildren, userId }: Props) {
     setTimeout(() => setToast(null), 2000)
   }
 
+  const handleRecordUpdated = (updatedRecord: Record) => {
+    // 更新した記録を反映して時刻順にソート
+    setRecords(prev => {
+      const newRecords = prev.map(r => r.id === updatedRecord.id ? updatedRecord : r)
+      return newRecords.sort((a, b) =>
+        new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+      )
+    })
+    setEditingRecord(null)
+    setSelectedRecordType(null)
+
+    // トースト表示
+    const recordType = RECORD_TYPES.find(r => r.type === updatedRecord.type)
+    setToast(`${recordType?.emoji} ${recordType?.label}を更新しました`)
+    setTimeout(() => setToast(null), 2000)
+  }
+
+  // タイムラインの項目をタップして編集
+  const handleRecordClick = (record: Record) => {
+    setEditingRecord(record)
+    setSelectedRecordType(record.type)
+  }
+
   // 記録を削除
   const handleDeleteRecord = async (recordId: string) => {
     if (!confirm('この記録を削除しますか？')) return
@@ -128,7 +152,7 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* ヘッダー */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -255,7 +279,8 @@ export default function HomeClient({ initialChildren, userId }: Props) {
               return (
                 <div
                   key={record.id}
-                  className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm"
+                  className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm cursor-pointer hover:bg-gray-50 transition"
+                  onClick={() => handleRecordClick(record)}
                 >
                   <span className="text-xs text-gray-400 w-12">{time}</span>
                   <span className="text-xl">{displayEmoji}</span>
@@ -267,7 +292,10 @@ export default function HomeClient({ initialChildren, userId }: Props) {
                     )}
                   </span>
                   <button
-                    onClick={() => handleDeleteRecord(record.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteRecord(record.id)
+                    }}
                     className="text-gray-300 hover:text-red-400 transition p-1"
                     title="削除"
                   >
@@ -286,8 +314,13 @@ export default function HomeClient({ initialChildren, userId }: Props) {
           type={selectedRecordType}
           childId={selectedChildId}
           date={selectedDate}
-          onClose={() => setSelectedRecordType(null)}
+          onClose={() => {
+            setSelectedRecordType(null)
+            setEditingRecord(null)
+          }}
           onSaved={handleRecordSaved}
+          editRecord={editingRecord || undefined}
+          onUpdated={handleRecordUpdated}
         />
       )}
 

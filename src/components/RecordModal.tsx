@@ -10,23 +10,51 @@ type Props = {
   date: Date
   onClose: () => void
   onSaved: (record: Record) => void
+  editRecord?: Record  // 編集する既存レコード
+  onUpdated?: (record: Record) => void  // 更新時のコールバック
 }
 
-export default function RecordModal({ type, childId, date, onClose, onSaved }: Props) {
+export default function RecordModal({ type, childId, date, onClose, onSaved, editRecord, onUpdated }: Props) {
+  const isEditing = !!editRecord
+
   const [time, setTime] = useState(() => {
+    if (editRecord) {
+      const d = new Date(editRecord.recorded_at)
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+    }
     const now = new Date()
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
   })
-  const [amount, setAmount] = useState<number>(100)
-  const [temperatureInt, setTemperatureInt] = useState(36)
-  const [temperatureDec, setTemperatureDec] = useState(5)
+  const [amount, setAmount] = useState<number>(editRecord?.value?.amount || 100)
+  const [temperatureInt, setTemperatureInt] = useState(() => {
+    if (editRecord?.value?.temperature) {
+      return Math.floor(editRecord.value.temperature)
+    }
+    return 36
+  })
+  const [temperatureDec, setTemperatureDec] = useState(() => {
+    if (editRecord?.value?.temperature) {
+      return Math.round((editRecord.value.temperature % 1) * 10)
+    }
+    return 5
+  })
   // 母乳ストップウォッチ
-  const [leftSeconds, setLeftSeconds] = useState(0)
-  const [rightSeconds, setRightSeconds] = useState(0)
+  const [leftSeconds, setLeftSeconds] = useState(() => {
+    if (editRecord?.value?.left_minutes) {
+      return Math.round(editRecord.value.left_minutes * 60)
+    }
+    return 0
+  })
+  const [rightSeconds, setRightSeconds] = useState(() => {
+    if (editRecord?.value?.right_minutes) {
+      return Math.round(editRecord.value.right_minutes * 60)
+    }
+    return 0
+  })
   const [leftTimerRunning, setLeftTimerRunning] = useState(false)
   const [rightTimerRunning, setRightTimerRunning] = useState(false)
-  const [sleepType, setSleepType] = useState<'asleep' | 'awake' | null>(null)
-  const [memo, setMemo] = useState('')
+  const [sleepType, setSleepType] = useState<'asleep' | 'awake' | null>(editRecord?.value?.sleep_type || null)
+  const [memo, setMemo] = useState(editRecord?.memo || '')
   const [loading, setLoading] = useState(false)
 
   // ストップウォッチのタイマー
@@ -78,26 +106,50 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
       value.temperature = temperatureInt + temperatureDec / 10
     }
 
-    const { data, error } = await supabase
-      .from('records')
-      .insert({
-        child_id: childId,
-        type: type as RecordType,
-        recorded_at: recordDate.toISOString(),
-        value: Object.keys(value).length > 0 ? value : null,
-        memo: memo || null,
-      })
-      .select()
-      .single()
+    if (isEditing && editRecord) {
+      // 更新
+      const { data, error } = await supabase
+        .from('records')
+        .update({
+          recorded_at: recordDate.toISOString(),
+          value: Object.keys(value).length > 0 ? value : null,
+          memo: memo || null,
+        })
+        .eq('id', editRecord.id)
+        .select()
+        .single()
 
-    setLoading(false)
+      setLoading(false)
 
-    if (error) {
-      alert('保存に失敗しました')
-      return
+      if (error) {
+        alert('更新に失敗しました')
+        return
+      }
+
+      onUpdated?.(data)
+    } else {
+      // 新規作成
+      const { data, error } = await supabase
+        .from('records')
+        .insert({
+          child_id: childId,
+          type: type as RecordType,
+          recorded_at: recordDate.toISOString(),
+          value: Object.keys(value).length > 0 ? value : null,
+          memo: memo || null,
+        })
+        .select()
+        .single()
+
+      setLoading(false)
+
+      if (error) {
+        alert('保存に失敗しました')
+        return
+      }
+
+      onSaved(data)
     }
-
-    onSaved(data)
   }
 
   // ミルク量は10-350mlまで10ml刻み (selectで生成)
@@ -108,7 +160,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
           <span className="text-4xl">{recordType?.emoji}</span>
-          <span className="text-lg font-semibold">{recordType?.label}を記録</span>
+          <span className="text-lg font-semibold">{recordType?.label}を{isEditing ? '編集' : '記録'}</span>
           <button
             onClick={onClose}
             className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
@@ -343,7 +395,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved }: P
           className="w-full py-4 text-white rounded-xl font-semibold transition disabled:opacity-50"
           style={{ backgroundColor: '#D97757' }}
         >
-          {loading ? '保存中...' : '保存する'}
+          {loading ? '保存中...' : isEditing ? '更新する' : '保存する'}
         </button>
       </div>
     </div>

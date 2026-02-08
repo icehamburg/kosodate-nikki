@@ -148,7 +148,7 @@ export default function CalendarPage() {
   const days = generateCalendarDays()
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-14">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* ヘッダー */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -344,7 +344,7 @@ export default function CalendarPage() {
                 return (
                   <div key={hour} className="flex border-b border-gray-100 last:border-b-0">
                     {/* 時刻ラベル（左側固定） */}
-                    <div className="w-12 py-3 text-center text-xs text-gray-300 border-r border-gray-100 bg-gray-50/50 flex-shrink-0 sticky left-0">
+                    <div className="w-12 py-3 text-center text-xs text-gray-600 font-medium border-r border-gray-100 bg-gray-50/50 flex-shrink-0 sticky left-0">
                       {hour}
                     </div>
                     {/* 記録エリア */}
@@ -412,12 +412,12 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* 選択日の記録（月表示モード） */}
+      {/* 選択日の日記（月表示モード） */}
       {viewMode === 'month' && selectedDate && (
         <div className="px-4 mt-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-gray-700">
-              {formatSelectedDate()}の記録
+              {formatSelectedDate()}
             </span>
             <button
               onClick={() => setShowDiaryModal(true)}
@@ -428,69 +428,29 @@ export default function CalendarPage() {
             </button>
           </div>
 
-          {/* 日記 */}
-          {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) && (
-            <div className="bg-yellow-50 rounded-xl p-4 mb-3 shadow-sm">
-              <div className="flex gap-3">
-                {/* 写真があれば表示 */}
-                {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
-                  <img
-                    src={dayDiary.photo_urls[0]}
-                    alt="日記の写真"
-                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer"
-                    onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
-                  />
-                )}
-                <div className="flex-1">
-                  <div className="text-xs text-yellow-600 mb-1">📝 日記</div>
-                  {dayDiary.content && (
-                    <div className="text-sm text-gray-700">{dayDiary.content}</div>
-                  )}
+          {/* 日記表示 */}
+          {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) ? (
+            <div className="bg-white rounded-xl p-4 shadow-sm">
+              {/* 写真があれば表示 */}
+              {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
+                <img
+                  src={dayDiary.photo_urls[0]}
+                  alt="日記の写真"
+                  className="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer"
+                  onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
+                />
+              )}
+              {dayDiary.content && (
+                <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {dayDiary.content}
                 </div>
-              </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl p-4 shadow-sm text-center text-gray-400">
+              日記がありません
             </div>
           )}
-
-          {/* 記録一覧 */}
-          <div className="space-y-2">
-            {dayRecords.length === 0 && !dayDiary?.content ? (
-              <div className="bg-white rounded-xl p-4 shadow-sm text-center text-gray-400">
-                この日の記録はありません
-              </div>
-            ) : (
-              dayRecords.map(record => {
-                const recordType = RECORD_TYPES.find(r => r.type === record.type)
-                const time = new Date(record.recorded_at).toLocaleTimeString('ja-JP', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })
-
-                let detail = ''
-                if (record.type === 'milk' && record.value?.amount) {
-                  detail = `${record.value.amount}ml`
-                } else if (record.type === 'temperature' && record.value?.temperature) {
-                  detail = `${record.value.temperature}℃`
-                }
-
-                return (
-                  <div
-                    key={record.id}
-                    className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm"
-                  >
-                    <span className="text-xs text-gray-400 w-12">{time}</span>
-                    <span className="text-xl">{recordType?.emoji}</span>
-                    <span className="text-sm">
-                      {recordType?.label}
-                      {detail && <span className="text-gray-500 ml-1">{detail}</span>}
-                    </span>
-                    {record.memo && (
-                      <span className="text-xs text-gray-400 ml-auto">{record.memo}</span>
-                    )}
-                  </div>
-                )
-              })
-            )}
-          </div>
         </div>
       )}
 
