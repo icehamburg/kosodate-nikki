@@ -309,78 +309,77 @@ export default function CalendarPage() {
 
       {/* 24時間タイムライン（日表示モード） */}
       {viewMode === 'day' && selectedDate && (
-        <div className="px-4 py-2">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            {/* 日記 */}
-            {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) && (
-              <div className="bg-yellow-50 p-4 border-b">
-                <div className="flex gap-3">
-                  {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
-                    <img
-                      src={dayDiary.photo_urls[0]}
-                      alt="日記の写真"
-                      className="w-16 h-16 object-cover rounded-lg flex-shrink-0 cursor-pointer"
-                      onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
-                    />
+        <div className="flex flex-col" style={{ height: 'calc(100vh - 200px)' }}>
+          {/* 日記 */}
+          {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) && (
+            <div className="mx-4 mt-2 bg-yellow-50 rounded-xl p-4 flex-shrink-0">
+              <div className="flex gap-3">
+                {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
+                  <img
+                    src={dayDiary.photo_urls[0]}
+                    alt="日記の写真"
+                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0 cursor-pointer"
+                    onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="text-xs text-yellow-600 mb-1">📝 日記</div>
+                  {dayDiary.content && (
+                    <div className="text-sm text-gray-700">{dayDiary.content}</div>
                   )}
-                  <div className="flex-1">
-                    <div className="text-xs text-yellow-600 mb-1">📝 日記</div>
-                    {dayDiary.content && (
-                      <div className="text-sm text-gray-700">{dayDiary.content}</div>
-                    )}
-                  </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* 24時間タイムライン */}
+          {/* 24時間タイムライン（スクロール可能） */}
+          <div className="flex-1 overflow-y-auto mx-4 my-2 bg-white rounded-xl shadow-sm">
             <div className="relative">
+              {/* 時間軸は上から下（0時→23時） */}
               {Array.from({ length: 24 }, (_, hour) => {
-                const hourRecords = dayRecords.filter(r => {
-                  const recordHour = new Date(r.recorded_at).getHours()
-                  return recordHour === hour
-                })
+                const hourRecords = dayRecords
+                  .filter(r => new Date(r.recorded_at).getHours() === hour)
+                  .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
 
                 return (
                   <div key={hour} className="flex border-b last:border-b-0">
-                    {/* 時刻 */}
-                    <div className="w-14 py-3 text-center text-xs text-gray-400 border-r bg-gray-50 flex-shrink-0">
-                      {String(hour).padStart(2, '0')}:00
+                    {/* 時刻ラベル（左側固定） */}
+                    <div className="w-12 py-3 text-center text-xs text-gray-400 border-r bg-gray-50 flex-shrink-0 sticky left-0">
+                      {hour}
                     </div>
-                    {/* 記録 */}
-                    <div className="flex-1 min-h-[48px] p-2">
+                    {/* 記録エリア */}
+                    <div className="flex-1 min-h-[56px] p-2 flex flex-col gap-1">
                       {hourRecords.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {hourRecords.map(record => {
-                            const recordType = RECORD_TYPES.find(r => r.type === record.type)
-                            const minutes = new Date(record.recorded_at).getMinutes()
-                            let detail = ''
-                            if (record.type === 'milk' && record.value?.amount) {
-                              detail = `${record.value.amount}ml`
-                            } else if (record.type === 'temperature' && record.value?.temperature) {
-                              detail = `${record.value.temperature}℃`
-                            } else if (record.type === 'sleep' && record.value?.sleep_type) {
-                              detail = record.value.sleep_type === 'asleep' ? '寝た' : '起きた'
-                            } else if (record.type === 'breast') {
-                              const left = record.value?.left_minutes
-                              const right = record.value?.right_minutes
-                              if (left || right) {
-                                detail = `左${left || 0}分 右${right || 0}分`
-                              }
+                        hourRecords.map(record => {
+                          const recordType = RECORD_TYPES.find(r => r.type === record.type)
+                          const minutes = new Date(record.recorded_at).getMinutes()
+                          let detail = ''
+                          if (record.type === 'milk' && record.value?.amount) {
+                            detail = `${record.value.amount}ml`
+                          } else if (record.type === 'temperature' && record.value?.temperature) {
+                            detail = `${record.value.temperature}℃`
+                          } else if (record.type === 'sleep' && record.value?.sleep_type) {
+                            detail = record.value.sleep_type === 'asleep' ? '寝た' : '起きた'
+                          } else if (record.type === 'breast') {
+                            const left = record.value?.left_minutes
+                            const right = record.value?.right_minutes
+                            if (left || right) {
+                              detail = `左${left || 0}分 右${right || 0}分`
                             }
+                          }
 
-                            return (
-                              <div
-                                key={record.id}
-                                className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1 text-xs"
-                              >
-                                <span className="text-gray-400">{String(minutes).padStart(2, '0')}</span>
-                                <span>{recordType?.emoji}</span>
-                                {detail && <span className="text-gray-600">{detail}</span>}
-                              </div>
-                            )
-                          })}
-                        </div>
+                          return (
+                            <div
+                              key={record.id}
+                              className="flex items-center gap-2 text-sm"
+                            >
+                              <span className="text-gray-400 text-xs w-6">:{String(minutes).padStart(2, '0')}</span>
+                              <span className="text-lg">{recordType?.emoji}</span>
+                              <span className="font-medium">{recordType?.label}</span>
+                              {detail && <span className="text-gray-500 text-xs">{detail}</span>}
+                            </div>
+                          )
+                        })
                       ) : null}
                     </div>
                   </div>
@@ -390,13 +389,15 @@ export default function CalendarPage() {
           </div>
 
           {/* 日記を書くボタン */}
-          <button
-            onClick={() => setShowDiaryModal(true)}
-            className="w-full mt-3 py-3 bg-white rounded-xl shadow-sm text-center"
-            style={{ color: '#D97757' }}
-          >
-            📝 日記を書く
-          </button>
+          <div className="px-4 pb-2 flex-shrink-0">
+            <button
+              onClick={() => setShowDiaryModal(true)}
+              className="w-full py-3 bg-white rounded-xl shadow-sm text-center"
+              style={{ color: '#D97757' }}
+            >
+              📝 日記を書く
+            </button>
+          </div>
         </div>
       )}
 

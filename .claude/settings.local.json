@@ -25,7 +25,8 @@
       "Bash(gh repo create:*)",
       "Bash(/opt/homebrew/bin/gh repo create:*)",
       "Bash(git push)",
-      "Bash(npm run open:ios:*)"
+      "Bash(npm run open:ios:*)",
+      "Bash(git push:*)"
     ]
   }
 }
