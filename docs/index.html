@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>子育て日記 - 赤ちゃんの成長をかんたん記録</title>
+  <meta name="description" content="授乳・おむつ・睡眠をワンタップで記録。忙しい育児中でもサッと使える育児日記アプリ。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #333;
+      line-height: 1.8;
+      background: #fff;
+    }
+
+    /* Header */
+    header {
+      background: white;
+      padding: 16px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .header-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #E07A5F;
+      text-decoration: none;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+    }
+
+    nav a {
+      color: #666;
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 0.9rem;
+    }
+
+    nav a:hover {
+      color: #E07A5F;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(180deg, #FFF8F5 0%, #FFFFFF 100%);
+      padding: 140px 20px 80px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: #E07A5F;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .hero h1 .accent {
+      color: #E07A5F;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 40px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .store-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 50px;
+    }
+
+    .store-buttons img {
+      height: 48px;
+    }
+
+    .hero-screenshots {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .hero-screenshots img {
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+
+    .hero-screenshots img.main {
+      height: 500px;
+    }
+
+    .hero-screenshots img.side {
+      height: 420px;
+      opacity: 0.9;
+    }
+
+    /* Section Common */
+    section {
+      padding: 100px 20px;
+    }
+
+    section h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    section .section-subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 60px;
+    }
+
+    /* Features Section */
+    .features {
+      background: #fff;
+    }
+
+    .feature-list {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      margin-bottom: 80px;
+    }
+
+    .feature-item:nth-child(even) {
+      flex-direction: row-reverse;
+    }
+
+    .feature-item img {
+      width: 280px;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .feature-text {
+      flex: 1;
+    }
+
+    .feature-text .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .feature-text h3 {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .feature-text p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    /* Quick Features */
+    .quick-features {
+      background: #FFF9F7;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .quick-card {
+      background: white;
+      padding: 32px 24px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .quick-card .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .quick-card h4 {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .quick-card p {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    /* CTA Section */
+    .cta {
+      background: linear-gradient(135deg, #E07A5F 0%, #E8967E 100%);
+      text-align: center;
+      color: white;
+    }
+
+    .cta h2 {
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      opacity: 0.9;
+      margin-bottom: 30px;
+    }
+
+    .cta .store-buttons img {
+      height: 52px;
+    }
+
+    /* Support Section */
+    .support {
+      background: #f8f8f8;
+    }
+
+    .support-content {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .support p {
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .support-email {
+      display: inline-block;
+      background: #E07A5F;
+      color: white;
+      padding: 16px 40px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .support-email:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(224, 122, 95, 0.3);
+    }
+
+    /* Privacy Section */
+    .privacy {
+      background: white;
+      padding: 80px 20px;
+    }
+
+    .privacy-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .privacy h3 {
+      font-size: 1.1rem;
+      color: #333;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #FFF0EB;
+    }
+
+    .privacy p, .privacy ul {
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .privacy ul {
+      padding-left: 24px;
+    }
+
+    .privacy li {
+      margin-bottom: 8px;
+    }
+
+    /* Footer */
+    footer {
+      background: #333;
+      color: #aaa;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: #ddd;
+      text-decoration: none;
+      margin: 0 12px;
+    }
+
+    footer a:hover {
+      color: #fff;
+    }
+
+    .footer-links {
+      margin-bottom: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero-screenshots {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hero-screenshots img.main {
+        height: 400px;
+      }
+
+      .hero-screenshots img.side {
+        display: none;
+      }
+
+      .feature-item {
+        flex-direction: column !important;
+        text-align: center;
+        gap: 30px;
+      }
+
+      .feature-item img {
+        width: 240px;
+      }
+
+      nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <a href="#" class="logo">
+        <span>📔</span> 子育て日記
+      </a>
+      <nav>
+        <a href="#features">機能</a>
+        <a href="#support">サポート</a>
+        <a href="#privacy">プライバシー</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">無料で使える育児記録アプリ</div>
+    <h1>毎日の<span class="accent">成長</span>を<br>かんたん記録</h1>
+    <p class="hero-description">授乳・おむつ・睡眠をワンタップで記録。<br>忙しい育児中でもサッと使えます。</p>
+
+    <div class="store-buttons">
+      <a href="#">
+        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+      </a>
+    </div>
+
+    <div class="hero-screenshots">
+      <img src="screenshots/04_summary.png" alt="まとめ" class="side">
+      <img src="screenshots/01_home.png" alt="ホーム" class="main">
+      <img src="screenshots/03_timeline.png" alt="タイムライン" class="side">
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <h2>かんたん便利な機能</h2>
+    <p class="section-subtitle">育児の記録がもっと楽になる</p>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <img src="screenshots/01_home.png" alt="ホーム画面">
+        <div class="feature-text">
+          <div class="icon">🍼</div>
+          <h3>ワンタップで素早く記録</h3>
+          <p>授乳、おむつ、睡眠、離乳食など、よく使う記録をホーム画面からワンタップで入力。片手でも操作しやすいシンプルなデザインです。</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <img src="screenshots/06_breastfeeding.png" alt="授乳タイマー">
+        <div class="feature-text">
+          <div class="icon">⏱️</div>
+          <h3>授乳タイマー搭載</h3>
+          <p>母乳は左右別々にストップウォッチで計測。授乳しながら片手で操作できます。ミルクは量も記録OK。</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <img src="screenshots/03_timeline.png" alt="タイムライン">
+        <div class="feature-text">
+          <div class="icon">📅</div>
+          <h3>24時間タイムライン</h3>
+          <p>1日の流れがひと目でわかるタイムライン表示。いつ何をしたか、生活リズムを把握できます。</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <img src="screenshots/04_summary.png" alt="まとめ">
+        <div class="feature-text">
+          <div class="icon">📊</div>
+          <h3>週間・月間まとめ</h3>
+          <p>記録を自動で集計してグラフ表示。成長の様子や生活パターンの変化がわかります。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Features -->
+  <section class="quick-features">
+    <h2>その他の機能</h2>
+    <p class="section-subtitle">毎日の育児をしっかりサポート</p>
+
+    <div class="quick-grid">
+      <div class="quick-card">
+        <div class="icon">📝</div>
+        <h4>日記</h4>
+        <p>写真付きで毎日の出来事を記録</p>
+      </div>
+      <div class="quick-card">
+        <div class="icon">🛁</div>
+        <h4>お風呂</h4>
+        <p>入浴時間を記録</p>
+      </div>
+      <div class="quick-card">
+        <div class="icon">🌡️</div>
+        <h4>体温</h4>
+        <p>毎日の体温管理</p>
+      </div>
+      <div class="quick-card">
+        <div class="icon">💊</div>
+        <h4>くすり</h4>
+        <p>投薬の記録</p>
+      </div>
+      <div class="quick-card">
+        <div class="icon">📄</div>
+        <h4>PDF出力</h4>
+        <p>思い出をアルバムに</p>
+      </div>
+      <div class="quick-card">
+        <div class="icon">👶</div>
+        <h4>複数の子ども</h4>
+        <p>兄弟姉妹も管理OK</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <h2>今すぐはじめよう</h2>
+    <p>無料でダウンロード</p>
+    <div class="store-buttons">
+      <a href="#">
+        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+      </a>
+    </div>
+  </section>
+
+  <!-- Support Section -->
+  <section class="support" id="support">
+    <div class="support-content">
+      <h2>サポート・お問い合わせ</h2>
+      <p>アプリに関するご質問、ご要望、不具合のご報告など、<br>お気軽にお問い合わせください。</p>
+      <a href="mailto:hiraoji@gmail.com" class="support-email">📧 メールで問い合わせ</a>
+    </div>
+  </section>
+
+  <!-- Privacy Policy Section -->
+  <section class="privacy" id="privacy">
+    <div class="privacy-content">
+      <h2>プライバシーポリシー</h2>
+      <p>本アプリ「子育て日記」は、ユーザーの皆様の育児記録データを安全に管理します。</p>
+
+      <h3>収集するデータ</h3>
+      <ul>
+        <li>メールアドレス（アカウント認証用）</li>
+        <li>育児記録データ（授乳、おむつ、睡眠等の記録）</li>
+        <li>日記・写真データ</li>
+      </ul>
+
+      <h3>データの利用目的</h3>
+      <ul>
+        <li>アプリのサービス提供</li>
+        <li>ユーザーのデータ同期・バックアップ</li>
+      </ul>
+
+      <h3>データの第三者提供</h3>
+      <p>収集したデータを第三者に提供・販売することはありません。</p>
+
+      <h3>データの保管</h3>
+      <p>データは Supabase のセキュアなクラウドサーバーに保存されます。SSL暗号化により通信は保護されています。</p>
+
+      <h3>データの削除</h3>
+      <p>アカウントを削除すると、関連するすべてのデータが削除されます。削除をご希望の場合はお問い合わせください。</p>
+
+      <h3>お問い合わせ</h3>
+      <p>プライバシーに関するお問い合わせ: <a href="mailto:hiraoji@gmail.com">hiraoji@gmail.com</a></p>
+
+      <p style="margin-top: 40px; font-size: 0.85rem; color: #999;">最終更新日: 2025年2月10日</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="#features">機能</a>
+      <a href="#support">サポート</a>
+      <a href="#privacy">プライバシーポリシー</a>
+    </div>
+    <p>© 2025 Takuya Hiraoji. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
