@@ -42,7 +42,7 @@
 データは Supabase のセキュアなクラウドサーバーに保存されます。
 
 ### お問い合わせ
-プライバシーに関するお問い合わせ: hiraoji@gmail.com
+プライバシーに関するお問い合わせ: icehamburgs@gmail.com
 
 ---
 
