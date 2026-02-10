@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 子育て日記 - Kosodate Nikki
 
-## Getting Started
+赤ちゃんの毎日の成長をかんたんに記録できる育児日記アプリです。
 
-First, run the development server:
+## 機能
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **授乳記録** - 母乳（左右別タイマー付き）・ミルクの記録
+- **おむつ記録** - おしっこ・うんちの記録
+- **睡眠記録** - 寝た・起きた時間の記録
+- **離乳食・おやつ** - 食事の記録
+- **お風呂・体温・くすり** - 日々のケア記録
+- **日記** - 写真付きで毎日の出来事を記録
+- **カレンダー** - 月表示・24時間タイムライン表示
+- **まとめ** - 週間・月間の統計グラフ
+- **PDF出力** - 思い出をPDFでアルバムに
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## サポート・お問い合わせ
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+アプリに関するご質問・ご要望・不具合報告は、以下までご連絡ください。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**メール**: hiraoji@gmail.com
 
-## Learn More
+できる限り迅速に対応いたします。
 
-To learn more about Next.js, take a look at the following resources:
+## プライバシーポリシー
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+本アプリは、ユーザーの育児記録データを安全に管理します。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 収集するデータ
+- メールアドレス（アカウント認証用）
+- 育児記録データ（授乳、おむつ、睡眠等の記録）
+- 日記・写真データ
 
-## Deploy on Vercel
+### データの利用目的
+- アプリのサービス提供
+- ユーザーのデータ同期・バックアップ
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### データの第三者提供
+収集したデータを第三者に提供・販売することはありません。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### データの保管
+データは Supabase のセキュアなクラウドサーバーに保存されます。
+
+### お問い合わせ
+プライバシーに関するお問い合わせ: hiraoji@gmail.com
+
+---
+
+© 2025 Takuya Hiraoji. All rights reserved.
