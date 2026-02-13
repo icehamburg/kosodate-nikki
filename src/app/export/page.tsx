@@ -271,17 +271,32 @@ export default function ExportPage() {
         coverPhotoUrl: croppedPhoto || coverPhoto || undefined,
       })
 
-      // ダウンロード
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${selectedChild.name}_日記_${startDate}_${endDate}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const fileName = `${selectedChild.name}_日記_${startDate}_${endDate}.pdf`
 
-      setProgress('完了！')
+      // Web Share API対応（iOS Safari / Capacitorで共有シートを表示）
+      if (navigator.share && typeof File !== 'undefined') {
+        try {
+          const file = new File([blob], fileName, { type: 'application/pdf' })
+          await navigator.share({
+            title: fileName,
+            files: [file],
+          })
+          setProgress('共有が完了しました！')
+        } catch (shareError) {
+          // ユーザーがキャンセルした場合
+          if ((shareError as Error).name === 'AbortError') {
+            setProgress('')
+            return
+          }
+          // シェアが失敗した場合はフォールバック
+          fallbackDownload(blob, fileName)
+          setProgress('完了！')
+        }
+      } else {
+        // Web Share API非対応の場合は従来のダウンロード
+        fallbackDownload(blob, fileName)
+        setProgress('完了！')
+      }
     } catch (error) {
       console.error('PDF生成エラー:', error)
       setProgress('エラーが発生しました')
@@ -291,15 +306,27 @@ export default function ExportPage() {
     }
   }
 
-  // 推定ページ数
+  // 従来のダウンロード方法（フォールバック）
+  const fallbackDownload = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // 推定ページ数（1ページ4日分）
   const estimatedPages = startDate && endDate
-    ? Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 2)) + 1
+    ? Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 4)) + 1
     : 0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
       {/* ヘッダー */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-white border-b sticky top-0 z-10 safe-top">
         <div className="px-4 py-3 flex items-center justify-between">
           <span className="text-lg font-semibold">📄 PDF出力</span>
           <Link href="/settings" className="text-2xl">⚙️</Link>

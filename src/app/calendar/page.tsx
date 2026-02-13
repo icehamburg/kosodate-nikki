@@ -148,19 +148,36 @@ export default function CalendarPage() {
   const days = generateCalendarDays()
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-28">
       {/* ヘッダー */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-white border-b sticky top-0 z-10 safe-top">
         <div className="px-4 py-3 flex items-center justify-between">
-          <select
-            value={selectedChildId}
-            onChange={(e) => setSelectedChildId(e.target.value)}
-            className="text-lg font-semibold bg-transparent border-none focus:outline-none"
-          >
-            {children.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            {(() => {
+              const selected = children.find(c => c.id === selectedChildId)
+              return (
+                <div
+                  className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: '#FDF4F1' }}
+                >
+                  {selected?.photo_url ? (
+                    <img src={selected.photo_url} alt={selected.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm">👶</span>
+                  )}
+                </div>
+              )
+            })()}
+            <select
+              value={selectedChildId}
+              onChange={(e) => setSelectedChildId(e.target.value)}
+              className="text-lg font-semibold bg-transparent border-none focus:outline-none"
+            >
+              {children.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
           <Link href="/settings" className="text-2xl">⚙️</Link>
         </div>
       </header>
@@ -431,20 +448,25 @@ export default function CalendarPage() {
           {/* 日記表示 */}
           {dayDiary && (dayDiary.content || (dayDiary.photo_urls && dayDiary.photo_urls.length > 0)) ? (
             <div className="bg-white rounded-xl p-4 shadow-sm">
-              {/* 写真があれば表示 */}
-              {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
-                <img
-                  src={dayDiary.photo_urls[0]}
-                  alt="日記の写真"
-                  className="w-full h-48 object-cover rounded-lg mb-3 cursor-pointer"
-                  onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
-                />
-              )}
-              {dayDiary.content && (
-                <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {dayDiary.content}
-                </div>
-              )}
+              {/* iPad: 横並び（写真左・テキスト右）、iPhone: 縦積み */}
+              <div className={`flex ${dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && dayDiary.content ? 'md:flex-row md:gap-4' : ''} flex-col`}>
+                {/* 写真があれば表示 */}
+                {dayDiary.photo_urls && dayDiary.photo_urls.length > 0 && (
+                  <div className="md:w-64 md:flex-shrink-0">
+                    <img
+                      src={dayDiary.photo_urls[0]}
+                      alt="日記の写真"
+                      className="w-full h-48 md:h-48 object-cover rounded-lg mb-3 md:mb-0 cursor-pointer"
+                      onClick={() => setShowFullImage(dayDiary.photo_urls![0])}
+                    />
+                  </div>
+                )}
+                {dayDiary.content && (
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed flex-1">
+                    {dayDiary.content}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="bg-white rounded-xl p-4 shadow-sm text-center text-gray-400">

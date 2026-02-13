@@ -154,17 +154,34 @@ export default function HomeClient({ initialChildren, userId }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* ヘッダー */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-white border-b sticky top-0 z-10 safe-top">
         <div className="px-4 py-3 flex items-center justify-between">
-          <select
-            value={selectedChildId}
-            onChange={(e) => setSelectedChildId(e.target.value)}
-            className="text-lg font-semibold bg-transparent border-none focus:outline-none cursor-pointer"
-          >
-            {children.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            {/* 顔写真 */}
+            <div
+              className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+              style={{ backgroundColor: '#FDF4F1' }}
+            >
+              {selectedChild?.photo_url ? (
+                <img
+                  src={selectedChild.photo_url}
+                  alt={selectedChild.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-sm">👶</span>
+              )}
+            </div>
+            <select
+              value={selectedChildId}
+              onChange={(e) => setSelectedChildId(e.target.value)}
+              className="text-lg font-semibold bg-transparent border-none focus:outline-none cursor-pointer"
+            >
+              {children.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
           <Link href="/settings" className="text-2xl">
             ⚙️
           </Link>

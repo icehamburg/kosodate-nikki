@@ -302,9 +302,11 @@ export async function generatePdf(options: PdfOptions): Promise<Blob> {
 
   // ===== 本文 =====
   const dates = getDateRange(startDate, endDate)
+  const ENTRIES_PER_PAGE = 4
+  const QUARTER_HEIGHT = (PAGE_HEIGHT - MARGIN * 2) / ENTRIES_PER_PAGE
 
-  // 2日ずつペアにする
-  for (let i = 0; i < dates.length; i += 2) {
+  // 4日ずつペアにする
+  for (let i = 0; i < dates.length; i += ENTRIES_PER_PAGE) {
     const contentPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
 
     // 背景色
@@ -320,41 +322,34 @@ export async function generatePdf(options: PdfOptions): Promise<Blob> {
       })
     }
 
-    // 上半分（1日目）- Y座標は上から下なので、PAGE_HEIGHT から引く
-    await renderDayEntry(
-      pdfDoc,
-      contentPage,
-      japaneseFont,
-      theme,
-      dates[i],
-      birthday,
-      diaryMap.get(dates[i]),
-      MARGIN,
-      PAGE_HEIGHT - MARGIN
-    )
-
-    // 区切り線
     const borderColor = hexToRgb(theme.content.borderColor)
-    contentPage.drawLine({
-      start: { x: MARGIN, y: PAGE_HEIGHT / 2 },
-      end: { x: PAGE_WIDTH - MARGIN, y: PAGE_HEIGHT / 2 },
-      thickness: 0.5,
-      color: rgb(borderColor.r, borderColor.g, borderColor.b),
-    })
 
-    // 下半分（2日目）
-    if (i + 1 < dates.length) {
+    for (let j = 0; j < ENTRIES_PER_PAGE && (i + j) < dates.length; j++) {
+      const entryTopY = PAGE_HEIGHT - MARGIN - (j * QUARTER_HEIGHT)
+
       await renderDayEntry(
         pdfDoc,
         contentPage,
         japaneseFont,
         theme,
-        dates[i + 1],
+        dates[i + j],
         birthday,
-        diaryMap.get(dates[i + 1]),
+        diaryMap.get(dates[i + j]),
         MARGIN,
-        PAGE_HEIGHT / 2 - 14
+        entryTopY,
+        QUARTER_HEIGHT - 10
       )
+
+      // 区切り線（最後のエントリ以外）
+      if (j < ENTRIES_PER_PAGE - 1 && (i + j + 1) < dates.length) {
+        const lineY = entryTopY - QUARTER_HEIGHT
+        contentPage.drawLine({
+          start: { x: MARGIN, y: lineY },
+          end: { x: PAGE_WIDTH - MARGIN, y: lineY },
+          thickness: 0.5,
+          color: rgb(borderColor.r, borderColor.g, borderColor.b),
+        })
+      }
     }
   }
 
@@ -373,6 +368,7 @@ async function renderDayEntry(
   diary: Diary | undefined,
   x: number,
   y: number,
+  maxHeight: number = 380,
 ) {
   const daysOld = getDaysOld(birthday, date)
 
@@ -381,19 +377,20 @@ async function renderDayEntry(
   const dateText = formatDate(date)
   page.drawText(dateText, {
     x,
-    y: y - 16,
-    size: 16,
+    y: y - 14,
+    size: 13,
     font,
     color: rgb(dateColor.r, dateColor.g, dateColor.b),
   })
 
-  // 生後○日目
+  // 生後○日目（日付の右に配置）
   const dayCountColor = hexToRgb(theme.content.dayCountColor)
   const dayCountText = `生後 ${daysOld}日目`
+  const dateWidth = font.widthOfTextAtSize(dateText, 13)
   page.drawText(dayCountText, {
-    x,
-    y: y - 32,
-    size: 10,
+    x: x + dateWidth + 10,
+    y: y - 14,
+    size: 9,
     font,
     color: rgb(dayCountColor.r, dayCountColor.g, dayCountColor.b),
   })
@@ -401,7 +398,7 @@ async function renderDayEntry(
   // 写真があれば配置
   let textStartX = x
   let hasPhoto = false
-  let photoBottomY = y - 45 // 写真がない場合のデフォルト位置
+  const contentStartY = y - 28
 
   if (diary?.photo_urls && diary.photo_urls.length > 0) {
     const photoUrl = diary.photo_urls[0]
@@ -417,19 +414,19 @@ async function renderDayEntry(
           image = await pdfDoc.embedJpg(imgResult.bytes)
         }
 
-        const photoSize = 141.73 // 50mm
+        const photoMaxSize = maxHeight - 35 // 日付分を引く
+        const photoSize = Math.min(100, photoMaxSize) // 最大100pt
         const scaledDims = image.scaleToFit(photoSize, photoSize)
 
         page.drawImage(image, {
           x,
-          y: y - 45 - scaledDims.height,
+          y: contentStartY - scaledDims.height,
           width: scaledDims.width,
           height: scaledDims.height,
         })
 
         hasPhoto = true
-        textStartX = x + scaledDims.width + 22.68 // 8mm gap
-        photoBottomY = y - 45 - scaledDims.height
+        textStartX = x + scaledDims.width + 14
       } catch (e) {
         console.error('画像の埋め込みエラー:', e)
       }
@@ -439,33 +436,53 @@ async function renderDayEntry(
   // コメント
   const textColor = hexToRgb(theme.content.textColor)
   if (diary?.content) {
-    const maxWidth = hasPhoto ? CONTENT_WIDTH - 170 : CONTENT_WIDTH
-    const fontSize = 11
-    const lineHeight = 16
+    const maxWidth = hasPhoto ? CONTENT_WIDTH - 120 : CONTENT_WIDTH
+    const fontSize = 9.5
+    const lineHeight = 14
 
-    // テキストを行に分割（簡易的な折り返し）
-    const lines = wrapText(diary.content, font, fontSize, maxWidth)
-    const displayLines = lines.slice(0, 8)
+    // 絵文字を除去してからテキストを行に分割
+    const cleanContent = removeEmoji(diary.content)
+    const lines = wrapText(cleanContent, font, fontSize, maxWidth)
+    const maxLines = Math.floor((maxHeight - 35) / lineHeight)
+    const displayLines = lines.slice(0, maxLines)
 
     displayLines.forEach((line, index) => {
       page.drawText(line, {
         x: textStartX,
-        y: y - 52 - (index * lineHeight),
+        y: contentStartY - 4 - (index * lineHeight),
         size: fontSize,
         font,
         color: rgb(textColor.r, textColor.g, textColor.b),
       })
     })
   } else if (!hasPhoto) {
-    // 日記なし（写真もない場合のみ表示）
-    page.drawText('この日の日記はありません', {
+    // 日記なし
+    page.drawText('', {
       x,
-      y: y - 52,
-      size: 10,
+      y: contentStartY - 4,
+      size: 9,
       font,
       color: rgb(dayCountColor.r, dayCountColor.g, dayCountColor.b),
     })
   }
+}
+
+// 絵文字を除去する（フォントがサポートしていないため）
+function removeEmoji(text: string): string {
+  return text
+    .replace(/[\u{1F600}-\u{1F64F}]/gu, '')  // Emoticons
+    .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')  // Misc Symbols and Pictographs
+    .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')  // Transport and Map
+    .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')  // Flags
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')    // Misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')    // Dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, '')    // Variation Selectors
+    .replace(/[\u{1F900}-\u{1F9FF}]/gu, '')  // Supplemental Symbols
+    .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '')  // Chess Symbols
+    .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '')  // Symbols Extended-A
+    .replace(/[\u{200D}]/gu, '')             // Zero Width Joiner
+    .replace(/[\u{20E3}]/gu, '')             // Combining Enclosing Keycap
+    .replace(/[\u{E0020}-\u{E007F}]/gu, '')  // Tags
 }
 
 // テキストの折り返し処理

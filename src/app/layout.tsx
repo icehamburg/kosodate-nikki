@@ -35,6 +35,25 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="antialiased">
+        <header
+          style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#EFEDE1', // ベージュ系
+            borderBottom: '2px solid #6B8E23', // オリーブグリーン
+            borderRadius: '0 0 24px 24px', // 下側角丸
+            fontFamily: 'Arial Rounded MT Bold, LINE Seed JP_TTF, sans-serif',
+            fontWeight: 700,
+            fontSize: 22,
+            color: '#6B8E23', // オリーブグリーン
+            letterSpacing: 1,
+            boxShadow: '0 2px 8px rgba(107,142,35,0.08)',
+          }}
+        >
+          子育て日記
+        </header>
         {children}
         <script
           dangerouslySetInnerHTML={{

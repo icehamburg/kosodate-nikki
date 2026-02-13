@@ -128,7 +128,7 @@ export default function SettingsPage() {
       />
 
       {/* ヘッダー */}
-      <header className="bg-white border-b">
+      <header className="bg-white border-b safe-top">
         <div className="px-4 py-3 flex items-center gap-3">
           <Link href="/" className="text-2xl">
             ←

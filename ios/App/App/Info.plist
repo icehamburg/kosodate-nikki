@@ -47,5 +47,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>日記に写真を追加するためにカメラを使用します</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>日記に写真を追加するためにフォトライブラリにアクセスします</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>PDFを保存するためにフォトライブラリにアクセスします</string>
 </dict>
 </plist>
