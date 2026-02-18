@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import ThemeProvider from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "子育て日記",
@@ -21,7 +22,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7EBDB" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1614" },
+  ],
 };
 
 export default function RootLayout({
@@ -30,31 +34,35 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-      </head>
-      <body className="antialiased">
-        <header
-          style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#EFEDE1', // ベージュ系
-            borderBottom: '2px solid #6B8E23', // オリーブグリーン
-            borderRadius: '0 0 24px 24px', // 下側角丸
-            fontFamily: 'Arial Rounded MT Bold, LINE Seed JP_TTF, sans-serif',
-            fontWeight: 700,
-            fontSize: 22,
-            color: '#6B8E23', // オリーブグリーン
-            letterSpacing: 1,
-            boxShadow: '0 2px 8px rgba(107,142,35,0.08)',
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=LINE+Seed+JP:wght@400;700&display=swap"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var mode = localStorage.getItem('theme-preference');
+                  var isDark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  if (mode === 'dark') document.documentElement.classList.add('dark');
+                  else if (mode === 'light') document.documentElement.classList.add('light');
+                  var bg = isDark ? '#1A1614' : '#F7EBDB';
+                  document.documentElement.style.backgroundColor = bg;
+                  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+                } catch(e) {}
+              })();
+            `,
           }}
-        >
-          子育て日記
-        </header>
-        {children}
+        />
+      </head>
+      <body className="antialiased" style={{ background: 'var(--background)' }}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

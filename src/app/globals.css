@@ -1,12 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* テラコッタ / クレイ系のアクセントカラー */
+  /* ライトモード */
+  --background: #F7EBDB;
+  --foreground: #3C3A37;
   --color-primary: #D97757;
   --color-primary-hover: #C4684A;
-  --color-primary-light: #FDF4F1;
+  --color-primary-light: #F7EBDB;
+  --color-nav-bg: #FFFCF8;
+  --color-header-bg: #F7EBDB;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F9FAFB;
+  --color-avatar-bg: #EDE0CF;
+  --color-icon-active: #3C3A37;
+  --color-icon-inactive: #9C9590;
+  --color-text-primary: #3C3A37;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-text-faint: #9C9590;
+  --color-border: #E5E7EB;
+  --color-input-bg: #FFFFFF;
+  --color-modal-bg: #FFFFFF;
+  --color-tag-bg: #F3F4F6;
+  --color-tag-active-bg: #D97757;
+  --color-diary-bg: #FEFCE8;
+  --color-timeline-bg: #F9FAFB;
+  --color-toast-bg: #1F2937;
+  --color-toast-text: #FFFFFF;
+  --color-danger: #EF4444;
+  --color-danger-bg: #FEF2F2;
   /* Safe area insets for iPhone X以降 */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
@@ -14,23 +36,108 @@
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
+/* 自動ダークモード（システム設定に従う） */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #1A1614;
+    --foreground: #E8E0D8;
+    --color-primary: #E08A6D;
+    --color-primary-hover: #D97757;
+    --color-primary-light: #2A2220;
+    --color-nav-bg: #1E1C1A;
+    --color-header-bg: #1A1614;
+    --color-card: #2A2622;
+    --color-card-hover: #332E2A;
+    --color-avatar-bg: #3A3430;
+    --color-icon-active: #E8E0D8;
+    --color-icon-inactive: #7A7470;
+    --color-text-primary: #E8E0D8;
+    --color-text-secondary: #A09890;
+    --color-text-muted: #7A7470;
+    --color-text-faint: #6A6460;
+    --color-border: #3A3630;
+    --color-input-bg: #2A2622;
+    --color-modal-bg: #2A2622;
+    --color-tag-bg: #332E2A;
+    --color-tag-active-bg: #E08A6D;
+    --color-diary-bg: #2A2620;
+    --color-timeline-bg: #242018;
+    --color-toast-bg: #3A3630;
+    --color-toast-text: #E8E0D8;
+    --color-danger: #F87171;
+    --color-danger-bg: #3A2020;
+  }
+}
+
+/* 手動ダークモード（.darkクラスで強制） */
+:root.dark {
+  --background: #1A1614;
+  --foreground: #E8E0D8;
+  --color-primary: #E08A6D;
+  --color-primary-hover: #D97757;
+  --color-primary-light: #2A2220;
+  --color-nav-bg: #1E1C1A;
+  --color-header-bg: #1A1614;
+  --color-card: #2A2622;
+  --color-card-hover: #332E2A;
+  --color-avatar-bg: #3A3430;
+  --color-icon-active: #E8E0D8;
+  --color-icon-inactive: #7A7470;
+  --color-text-primary: #E8E0D8;
+  --color-text-secondary: #A09890;
+  --color-text-muted: #7A7470;
+  --color-text-faint: #6A6460;
+  --color-border: #3A3630;
+  --color-input-bg: #2A2622;
+  --color-modal-bg: #2A2622;
+  --color-tag-bg: #332E2A;
+  --color-tag-active-bg: #E08A6D;
+  --color-diary-bg: #2A2620;
+  --color-timeline-bg: #242018;
+  --color-toast-bg: #3A3630;
+  --color-toast-text: #E8E0D8;
+  --color-danger: #F87171;
+  --color-danger-bg: #3A2020;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "LINE Seed JP", "Hiragino Sans", sans-serif;
   --font-mono: var(--font-geist-mono);
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color-scheme: light;
+}
+
+html.dark,
+html:not(.light):is([style*="color-scheme: dark"]) {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    color-scheme: dark;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-family: "LINE Seed JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
   /* PWA対応: 長押し選択・コンテキストメニュー防止 */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   /* スクロール時のバウンス抑制 */
   overscroll-behavior: none;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* テキスト入力欄は選択可能に */
