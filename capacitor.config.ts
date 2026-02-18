@@ -12,6 +12,17 @@ const config: CapacitorConfig = {
     contentInset: 'automatic',
     scheme: 'Kosodate Nikki',
   },
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: true,
+      launchShowDuration: 2000,
+      launchFadeOutDuration: 300,
+      backgroundColor: '#F7EBDB',
+      showSpinner: false,
+      splashImmersive: true,
+      splashFullScreen: true,
+    },
+  },
 }
 
 export default config

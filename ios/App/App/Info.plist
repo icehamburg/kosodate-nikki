@@ -5,7 +5,7 @@
     <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>ja</string>
 	<key>CFBundleDisplayName</key>
         <string>子育て日記</string>
 	<key>CFBundleExecutable</key>
@@ -53,5 +53,7 @@
 	<string>日記に写真を追加するためにフォトライブラリにアクセスします</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>PDFを保存するためにフォトライブラリにアクセスします</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

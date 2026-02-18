@@ -8,6 +8,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
+        // WebViewのスクロールバウンスを無効化（少し遅延させてWebViewの初期化を待つ）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if let rootVC = self.window?.rootViewController as? CAPBridgeViewController {
+                rootVC.webView?.scrollView.bounces = false
+                rootVC.webView?.scrollView.alwaysBounceVertical = false
+                rootVC.webView?.scrollView.alwaysBounceHorizontal = false
+            }
+        }
+
         return true
     }
 

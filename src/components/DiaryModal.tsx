@@ -119,14 +119,15 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-[calc(2rem+env(safe-area-inset-bottom))] animate-slide-up max-h-[80vh] overflow-auto">
+      <div className="w-full rounded-t-3xl p-6 pb-[calc(2rem+env(safe-area-inset-bottom))] animate-slide-up max-h-[80vh] overflow-auto" style={{ backgroundColor: 'var(--color-modal-bg)' }}>
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
           <span className="text-4xl">📝</span>
           <span className="text-lg font-semibold">{formattedDate}の日記</span>
           <button
             onClick={onClose}
-            className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-tag-bg)' }}
           >
             ✕
           </button>
@@ -138,7 +139,8 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="今日の出来事を書いてみよう..."
-            className="w-full p-4 border border-gray-200 rounded-xl resize-none h-40 text-base leading-relaxed"
+            className="w-full p-4 shadow-sm rounded-xl resize-none h-40 text-base leading-relaxed"
+            style={{ backgroundColor: 'var(--color-input-bg)' }}
           />
         </div>
 
@@ -176,7 +178,8 @@ export default function DiaryModal({ childId, date, onClose }: Props) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 transition disabled:opacity-50"
+              className="w-full py-3 border-2 border-dashed rounded-xl text-gray-500 transition disabled:opacity-50"
+              style={{ borderColor: 'var(--color-border)' }}
             >
               {uploading ? '📷 アップロード中...' : '📷 今日の写真を追加'}
             </button>

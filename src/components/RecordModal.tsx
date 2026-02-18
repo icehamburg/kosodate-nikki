@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Record, RecordType, RECORD_TYPES } from '@/lib/types'
 
+// 選択肢の配列をコンポーネント外で定数化（毎レンダーの再生成を防止）
+const MILK_AMOUNTS = Array.from({ length: 35 }, (_, i) => (i + 1) * 10)
+const MINUTES_0_TO_60 = Array.from({ length: 61 }, (_, i) => i)
+const SECONDS_0_TO_59 = Array.from({ length: 60 }, (_, i) => i)
+
 type Props = {
   type: string
   childId: string
@@ -156,14 +161,15 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-[calc(2rem+env(safe-area-inset-bottom))] animate-slide-up">
+      <div className="w-full rounded-t-3xl p-6 pb-[calc(2rem+env(safe-area-inset-bottom))] animate-slide-up" style={{ backgroundColor: 'var(--color-modal-bg)' }}>
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
           <span className="text-4xl">{recordType?.emoji}</span>
           <span className="text-lg font-semibold">{recordType?.label}を{isEditing ? '編集' : '記録'}</span>
           <button
             onClick={onClose}
-            className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-tag-bg)' }}
           >
             ✕
           </button>
@@ -176,7 +182,8 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="w-full p-3 border border-gray-200 rounded-xl text-lg"
+            className="w-full p-3 shadow-sm rounded-xl text-lg"
+            style={{ backgroundColor: 'var(--color-input-bg)' }}
           />
         </div>
 
@@ -188,10 +195,10 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
               <select
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="text-4xl font-bold p-3 border border-gray-200 rounded-xl bg-white appearance-none text-center w-32"
-                style={{ fontSize: '2rem' }}
+                className="text-4xl font-bold p-3 shadow-sm rounded-xl appearance-none text-center w-32"
+                style={{ fontSize: '2rem', backgroundColor: 'var(--color-input-bg)' }}
               >
-                {Array.from({ length: 35 }, (_, i) => (i + 1) * 10).map(ml => (
+                {MILK_AMOUNTS.map(ml => (
                   <option key={ml} value={ml}>{ml}</option>
                 ))}
               </select>
@@ -220,7 +227,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                     }}
                     className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition"
                     style={{
-                      backgroundColor: leftTimerRunning ? '#ef4444' : '#D97757',
+                      backgroundColor: leftTimerRunning ? '#ef4444' : 'var(--color-primary)',
                       color: 'white'
                     }}
                   >
@@ -243,9 +250,10 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                   <select
                     value={Math.floor(leftSeconds / 60)}
                     onChange={(e) => setLeftSeconds(Number(e.target.value) * 60 + (leftSeconds % 60))}
-                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                    className="text-lg p-2 shadow-sm rounded-lg w-16 text-center"
+                    style={{ backgroundColor: 'var(--color-input-bg)' }}
                   >
-                    {Array.from({ length: 61 }, (_, i) => (
+                    {MINUTES_0_TO_60.map(i => (
                       <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
                     ))}
                   </select>
@@ -253,9 +261,10 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                   <select
                     value={leftSeconds % 60}
                     onChange={(e) => setLeftSeconds(Math.floor(leftSeconds / 60) * 60 + Number(e.target.value))}
-                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                    className="text-lg p-2 shadow-sm rounded-lg w-16 text-center"
+                    style={{ backgroundColor: 'var(--color-input-bg)' }}
                   >
-                    {Array.from({ length: 60 }, (_, i) => (
+                    {SECONDS_0_TO_59.map(i => (
                       <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
                     ))}
                   </select>
@@ -280,7 +289,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                     }}
                     className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition"
                     style={{
-                      backgroundColor: rightTimerRunning ? '#ef4444' : '#D97757',
+                      backgroundColor: rightTimerRunning ? '#ef4444' : 'var(--color-primary)',
                       color: 'white'
                     }}
                   >
@@ -303,9 +312,10 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                   <select
                     value={Math.floor(rightSeconds / 60)}
                     onChange={(e) => setRightSeconds(Number(e.target.value) * 60 + (rightSeconds % 60))}
-                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                    className="text-lg p-2 shadow-sm rounded-lg w-16 text-center"
+                    style={{ backgroundColor: 'var(--color-input-bg)' }}
                   >
-                    {Array.from({ length: 61 }, (_, i) => (
+                    {MINUTES_0_TO_60.map(i => (
                       <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
                     ))}
                   </select>
@@ -313,9 +323,10 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
                   <select
                     value={rightSeconds % 60}
                     onChange={(e) => setRightSeconds(Math.floor(rightSeconds / 60) * 60 + Number(e.target.value))}
-                    className="text-lg p-2 border border-gray-200 rounded-lg bg-white w-16 text-center"
+                    className="text-lg p-2 shadow-sm rounded-lg w-16 text-center"
+                    style={{ backgroundColor: 'var(--color-input-bg)' }}
                   >
-                    {Array.from({ length: 60 }, (_, i) => (
+                    {SECONDS_0_TO_59.map(i => (
                       <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
                     ))}
                   </select>
@@ -333,14 +344,14 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
               <button
                 onClick={() => setSleepType('asleep')}
                 className="flex-1 py-4 rounded-xl border-2 transition text-lg font-medium"
-                style={sleepType === 'asleep' ? { backgroundColor: '#5B6B8A', color: 'white', borderColor: '#5B6B8A' } : { borderColor: '#e5e7eb' }}
+                style={sleepType === 'asleep' ? { backgroundColor: '#5B6B8A', color: 'white', borderColor: '#5B6B8A' } : { borderColor: 'var(--color-border)' }}
               >
                 😴 寝た
               </button>
               <button
                 onClick={() => setSleepType('awake')}
                 className="flex-1 py-4 rounded-xl border-2 transition text-lg font-medium"
-                style={sleepType === 'awake' ? { backgroundColor: '#E8B86D', color: 'white', borderColor: '#E8B86D' } : { borderColor: '#e5e7eb' }}
+                style={sleepType === 'awake' ? { backgroundColor: '#E8B86D', color: 'white', borderColor: '#E8B86D' } : { borderColor: 'var(--color-border)' }}
               >
                 ☀️ 起きた
               </button>
@@ -356,7 +367,8 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
               <select
                 value={temperatureInt}
                 onChange={(e) => setTemperatureInt(Number(e.target.value))}
-                className="text-3xl font-bold p-3 border border-gray-200 rounded-xl bg-white appearance-none text-center w-24"
+                className="text-3xl font-bold p-3 shadow-sm rounded-xl appearance-none text-center w-24"
+                style={{ backgroundColor: 'var(--color-input-bg)' }}
               >
                 {[34, 35, 36, 37, 38, 39, 40, 41, 42].map(n => (
                   <option key={n} value={n}>{n}</option>
@@ -366,7 +378,8 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
               <select
                 value={temperatureDec}
                 onChange={(e) => setTemperatureDec(Number(e.target.value))}
-                className="text-3xl font-bold p-3 border border-gray-200 rounded-xl bg-white appearance-none text-center w-20"
+                className="text-3xl font-bold p-3 shadow-sm rounded-xl appearance-none text-center w-20"
+                style={{ backgroundColor: 'var(--color-input-bg)' }}
               >
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
                   <option key={n} value={n}>{n}</option>
@@ -384,7 +397,8 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="メモを入力..."
-            className="w-full p-3 border border-gray-200 rounded-xl resize-none h-20"
+            className="w-full p-3 shadow-sm rounded-xl resize-none h-20"
+            style={{ backgroundColor: 'var(--color-input-bg)' }}
           />
         </div>
 
@@ -393,7 +407,7 @@ export default function RecordModal({ type, childId, date, onClose, onSaved, edi
           onClick={handleSubmit}
           disabled={loading}
           className="w-full py-4 text-white rounded-xl font-semibold transition disabled:opacity-50"
-          style={{ backgroundColor: '#D97757' }}
+          style={{ backgroundColor: 'var(--color-primary)' }}
         >
           {loading ? '保存中...' : isEditing ? '更新する' : '保存する'}
         </button>

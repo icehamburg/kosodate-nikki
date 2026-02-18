@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
+import AppProvider from "@/components/AppProvider";
 
 export const metadata: Metadata = {
   title: "子育て日記",
@@ -61,7 +62,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased" style={{ background: 'var(--background)' }}>
         <ThemeProvider>
-          {children}
+          <AppProvider>
+            {children}
+          </AppProvider>
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
